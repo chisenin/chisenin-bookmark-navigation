@@ -1,45 +1,95 @@
-import { verifyPassword, generateToken, authenticateRequest } from '../utils/auth.js';
-import { parseBody, createSuccessResponse, createErrorResponse } from '../utils/helpers.js';
+import { verifyPassword, generateToken } from '../utils/auth';
 
-export const authRoutes = {
-    // 用户登录
-    login: async (request, env) => {
-        try {
-            const body = await parseBody(request);
+/**
+ * 处理登录请求
+ * @param {Request} request - 请求对象
+ * @returns {Response} 响应对象
+ */
+export async function handleLogin(request) {
+    try {
+        const { password } = await request.json();
+        
+        // 验证密码
+        const isValid = verifyPassword(password);
+        
+        if (isValid) {
+            // 生成认证令牌
+            const token = generateToken();
             
-            if (!body.password) {
-                return createErrorResponse('请提供密码', 400);
-            }
-            
-            // 验证密码
-            const isPasswordValid = await verifyPassword(env, body.password);
-            if (!isPasswordValid) {
-                return createErrorResponse('密码不正确', 401);
-            }
-            
-            // 生成JWT令牌
-            const token = generateToken(env);
-            
-            return createSuccessResponse({ token });
-        } catch (error) {
-            console.error('登录失败:', error);
-            return createErrorResponse('登录失败: ' + error.message, 500);
+            // 设置cookie
+            return new Response(JSON.stringify({
+                success: true,
+                token
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Set-Cookie': `auth_token=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`
+                }
+            });
+        } else {
+            return new Response(JSON.stringify({
+                success: false,
+                message: '密码不正确'
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
-    },
-    
-    // 验证令牌
-    verify: async (request, env) => {
-        try {
-            // 验证令牌
-            const payload = authenticateRequest(request, env);
-            if (!payload) {
-                return createErrorResponse('无效的令牌', 401);
-            }
-            
-            return createSuccessResponse({ valid: true, payload });
-        } catch (error) {
-            console.error('验证令牌失败:', error);
-            return createErrorResponse('验证令牌失败: ' + error.message, 500);
-        }
+    } catch (error) {
+        return new Response(JSON.stringify({
+            success: false,
+            message: '登录失败',
+            error: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
-};
+}
+
+/**
+ * 处理登出请求
+ * @returns {Response} 响应对象
+ */
+export function handleLogout() {
+    // 清除cookie
+    return new Response(JSON.stringify({
+        success: true,
+        message: '已成功登出'
+    }), {
+        status: 200,
+        headers: {
+            'Content-Type': 'application/json',
+            'Set-Cookie': 'auth_token=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0'
+        }
+    });
+}
+
+/**
+ * 处理验证请求
+ * @param {Request} request - 请求对象
+ * @returns {Response} 响应对象
+ */
+export function handleVerify(request) {
+    const cookieHeader = request.headers.get('Cookie') || '';
+    const tokenMatch = cookieHeader.match(/auth_token=([^;]+)/);
+    
+    if (tokenMatch && tokenMatch[1]) {
+        return new Response(JSON.stringify({
+            success: true,
+            authenticated: true
+        }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    
+    return new Response(JSON.stringify({
+        success: true,
+        authenticated: false
+    }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
