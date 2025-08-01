@@ -15,7 +15,7 @@
 - **无需服务器**：利用Cloudflare全球网络，无需维护自己的服务器
 
 ## 目录结构
-bookmark-nav/
+```bookmark-nav/
 ├── frontend/              # Hexo前端
 │   ├── _config.yml        # Hexo配置
 │   ├── package.json       # 依赖配置
@@ -49,6 +49,7 @@ bookmark-nav/
 │           └── helpers.js # 辅助函数
 ├── .gitignore             # Git忽略文件
 └── README.md              # 说明文档
+```
 ## 部署指南
 
 ### 准备工作
