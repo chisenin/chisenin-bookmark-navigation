@@ -96,7 +96,7 @@ export const importBookmarks = async (db, data) => {
     // 先导入分类
     if (data.categories && Array.isArray(data.categories)) {
         for (const category of data.categories) {
-            await category.id = undefined; // 确保使用新的ID
+            category.id = undefined; // 确保使用新的ID
             await createCategory(db, category);
         }
     }
