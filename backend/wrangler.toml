@@ -1,6 +1,7 @@
 name = "bookmark-api"
 main = "src/index.js"
 compatibility_date = "2023-07-01"
+compatibility_flags = ["nodejs_compat"]  # 添加这一行
 
 [[d1_databases]]
 binding = "DB"
