@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- 直接引入source目录下的index.html内容 -->
-    <%- fs.readFileSync('source/index.html', 'utf8') %>
+    <!-- 通过 Hexo 的 partial 函数引入内容 -->
+    <%- partial('../../source/index.html') %>
     
     <!-- 配置API URL，从环境变量获取 -->
     <script>
