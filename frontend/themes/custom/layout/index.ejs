@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= config.title %></title>
+    <meta name="description" content="<%= config.description %>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 基础样式会被source/css/style.css覆盖 */
+    </style>
+</head>
+<body>
+    <!-- 页面内容会通过Hexo渲染，主要内容在source/index.html -->
+    <%- body %>
+    
+    <!-- 配置API URL，从环境变量获取 -->
+    <script>
+        // 从环境变量获取API URL，如果未设置则使用默认值
+        const BOOKMARK_API_URL = '<%= process.env.BOOKMARK_API_URL || "https://your-worker-subdomain.workers.dev" %>';
+    </script>
+</body>
+</html>
