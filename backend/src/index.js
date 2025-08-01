@@ -80,7 +80,7 @@ async function initDB(env) {
         `);
         
         // 创建书签表
-        await env.DB.exec(`
+        await env env.DB.exec(`
             CREATE TABLE IF NOT EXISTS bookmarks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 url TEXT NOT NULL,
@@ -95,12 +95,18 @@ async function initDB(env) {
             )
         `);
         
+        // 创建索引
+        await env.DB.exec(`
+            CREATE INDEX IF NOT EXISTS idx_bookmarks_category ON bookmarks(category_id)
+        `);
+        
         // 检查是否有管理员用户
         const userResult = await env.DB.prepare('SELECT * FROM users').all();
-        if (userResult.results.length === 0 && env.ADMIN_PASSWORD_HASH) {
-            // 创建初始管理员用户
+        if (userResult.results.length === 0 && env.ADMIN_PASSWORD) {
+            // 创建初始管理员用户（使用简单哈希，实际环境应使用更安全的哈希方式）
+            const passwordHash = btoa(env.ADMIN_PASSWORD); // 简单编码，实际应使用bcrypt等
             await env.DB.prepare('INSERT INTO users (password_hash) VALUES (?)')
-                .bind(env.ADMIN_PASSWORD_HASH)
+                .bind(passwordHash)
                 .run();
         }
     } catch (error) {
