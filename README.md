@@ -14,7 +14,6 @@
 - **安全可靠**：敏感信息通过环境变量传递，不在代码中硬编码
 - **无需服务器**：利用Cloudflare全球网络，无需维护自己的服务器
 
-## 目录结构
 bookmark-nav/
 ├── frontend/              # Hexo前端
 │   ├── _config.yml        # Hexo配置
