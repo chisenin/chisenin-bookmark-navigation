@@ -1,159 +1,219 @@
+import { Router } from 'itty-router';
 import { authenticateRequest } from '../utils/auth.js';
-import { bookmarkDB } from '../db/d1.js';
-import { parseBody, createSuccessResponse, createErrorResponse } from '../utils/helpers.js';
+import { 
+    getAllBookmarks, 
+    getBookmarkById, 
+    createBookmark, 
+    updateBookmark, 
+    deleteBookmark,
+    exportBookmarks,
+    importBookmarks
+} from '../db/d1.js';
 
-export const bookmarkRoutes = {
-    // 获取所有书签
-    getAll: async (request, env) => {
-        try {
-            // 验证身份
-            const payload = authenticateRequest(request, env);
-            if (!payload) {
-                return createErrorResponse('请先登录', 401);
-            }
-            
-            // 获取所有书签
-            const bookmarks = await bookmarkDB.getAll(env.DB);
-            return createSuccessResponse(bookmarks);
-        } catch (error) {
-            console.error('获取书签失败:', error);
-            return createErrorResponse('获取书签失败: ' + error.message, 500);
-        }
-    },
+const router = Router();
+
+// 获取所有书签
+router.get('/', async (request) => {
+    const { authenticated } = await authenticateRequest(request);
+    const includePrivate = authenticated;
+    const categoryId = request.query.category_id;
     
-    // 按ID获取书签
-    getById: async (request, env) => {
-        try {
-            // 验证身份
-            const payload = authenticateRequest(request, env);
-            if (!payload) {
-                return createErrorResponse('请先登录', 401);
-            }
-            
-            // 获取ID
-            const id = request.params.id;
-            if (!id) {
-                return createErrorResponse('请提供书签ID', 400);
-            }
-            
-            // 获取书签
-            const bookmark = await bookmarkDB.getById(env.DB, id);
-            if (!bookmark) {
-                return createErrorResponse('书签不存在', 404);
-            }
-            
-            return createSuccessResponse(bookmark);
-        } catch (error) {
-            console.error('获取书签失败:', error);
-            return createErrorResponse('获取书签失败: ' + error.message, 500);
-        }
-    },
-    
-    // 创建书签
-    create: async (request, env) => {
-        try {
-            // 验证身份
-            const payload = authenticateRequest(request, env);
-            if (!payload) {
-                return createErrorResponse('请先登录', 401);
-            }
-            
-            // 解析请求体
-            const body = await parseBody(request);
-            
-            // 验证必要字段
-            if (!body.url || !body.title) {
-                return createErrorResponse('URL和标题为必填项', 400);
-            }
-            
-            // 创建书签
-            const bookmark = await bookmarkDB.create(env.DB, body);
-            return createSuccessResponse(bookmark, 201);
-        } catch (error) {
-            console.error('创建书签失败:', error);
-            return createErrorResponse('创建书签失败: ' + error.message, 500);
-        }
-    },
-    
-    // 更新书签
-    update: async (request, env) => {
-        try {
-            // 验证身份
-            const payload = authenticateRequest(request, env);
-            if (!payload) {
-                return createErrorResponse('请先登录', 401);
-            }
-            
-            // 获取ID
-            const id = request.params.id;
-            if (!id) {
-                return createErrorResponse('请提供书签ID', 400);
-            }
-            
-            // 解析请求体
-            const body = await parseBody(request);
-            
-            // 验证必要字段
-            if (!body.url || !body.title) {
-                return createErrorResponse('URL和标题为必填项', 400);
-            }
-            
-            // 更新书签
-            const bookmark = await bookmarkDB.update(env.DB, id, body);
-            if (!bookmark) {
-                return createErrorResponse('书签不存在', 404);
-            }
-            
-            return createSuccessResponse(bookmark);
-        } catch (error) {
-            console.error('更新书签失败:', error);
-            return createErrorResponse('更新书签失败: ' + error.message, 500);
-        }
-    },
-    
-    // 删除书签
-    delete: async (request, env) => {
-        try {
-            // 验证身份
-            const payload = authenticateRequest(request, env);
-            if (!payload) {
-                return createErrorResponse('请先登录', 401);
-            }
-            
-            // 获取ID
-            const id = request.params.id;
-            if (!id) {
-                return createErrorResponse('请提供书签ID', 400);
-            }
-            
-            // 删除书签
-            const success = await bookmarkDB.delete(env.DB, id);
-            if (!success) {
-                return createErrorResponse('书签不存在', 404);
-            }
-            
-            return createSuccessResponse({ message: '书签已删除' });
-        } catch (error) {
-            console.error('删除书签失败:', error);
-            return createErrorResponse('删除书签失败: ' + error.message, 500);
-        }
-    },
-    
-    // 导出书签
-    export: async (request, env) => {
-        try {
-            // 验证身份
-            const payload = authenticateRequest(request, env);
-            if (!payload) {
-                return createErrorResponse('请先登录', 401);
-            }
-            
-            // 导出数据
-            const data = await bookmarkDB.export(env.DB);
-            return createSuccessResponse(data);
-        } catch (error) {
-            console.error('导出书签失败:', error);
-            return createErrorResponse('导出书签失败: ' + error.message, 500);
-        }
+    try {
+        const bookmarks = await getAllBookmarks(includePrivate, categoryId);
+        return new Response(JSON.stringify(bookmarks), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
-};
+});
+
+// 获取单个书签
+router.get('/:id', async (request) => {
+    const { authenticated } = await authenticateRequest(request);
+    const { id } = request.params;
+    
+    try {
+        const bookmark = await getBookmarkById(id);
+        
+        if (!bookmark) {
+            return new Response(JSON.stringify({ error: '书签不存在' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        
+        // 检查是否为私有书签且未认证
+        if (bookmark.is_private && !authenticated) {
+            return new Response(JSON.stringify({ error: '无权访问' }), {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        
+        return new Response(JSON.stringify(bookmark), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+});
+
+// 创建书签
+router.post('/', async (request) => {
+    const { authenticated } = await authenticateRequest(request);
+    
+    if (!authenticated) {
+        return new Response(JSON.stringify({ error: '需要登录' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    
+    try {
+        const data = await request.json();
+        const bookmark = await createBookmark(data);
+        
+        return new Response(JSON.stringify(bookmark), {
+            status: 201,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+});
+
+// 更新书签
+router.put('/:id', async (request) => {
+    const { authenticated } = await authenticateRequest(request);
+    const { id } = request.params;
+    
+    if (!authenticated) {
+        return new Response(JSON.stringify({ error: '需要登录' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    
+    try {
+        const data = await request.json();
+        const bookmark = await updateBookmark(id, data);
+        
+        if (!bookmark) {
+            return new Response(JSON.stringify({ error: '书签不存在' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        
+        return new Response(JSON.stringify(bookmark), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+});
+
+// 删除书签
+router.delete('/:id', async (request) => {
+    const { authenticated } = await authenticateRequest(request);
+    const { id } = request.params;
+    
+    if (!authenticated) {
+        return new Response(JSON.stringify({ error: '需要登录' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    
+    try {
+        const result = await deleteBookmark(id);
+        
+        if (!result) {
+            return new Response(JSON.stringify({ error: '书签不存在' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        
+        return new Response(JSON.stringify({ success: true }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+});
+
+// 导出书签
+router.get('/export', async (request) => {
+    const { authenticated } = await authenticateRequest(request);
+    
+    if (!authenticated) {
+        return new Response(JSON.stringify({ error: '需要登录' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    
+    try {
+        const data = await exportBookmarks();
+        return new Response(JSON.stringify(data), {
+            headers: { 
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="bookmarks_export.json"'
+            }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+});
+
+// 导入书签
+router.post('/import', async (request) => {
+    const { authenticated } = await authenticateRequest(request);
+    
+    if (!authenticated) {
+        return new Response(JSON.stringify({ error: '需要登录' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    
+    try {
+        const data = await request.json();
+        const result = await importBookmarks(data);
+        
+        return new Response(JSON.stringify({ 
+            success: true, 
+            imported: result 
+        }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+});
+
+export const bookmarkRoutes = router;
+    
