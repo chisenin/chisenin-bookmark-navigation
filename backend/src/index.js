@@ -80,7 +80,7 @@ async function initDB(env) {
         `);
         
         // 创建书签表
-        await env env.DB.exec(`
+        await env.DB.exec(`
             CREATE TABLE IF NOT EXISTS bookmarks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 url TEXT NOT NULL,
