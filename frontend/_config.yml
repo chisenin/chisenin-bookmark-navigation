@@ -23,7 +23,7 @@ archive_dir: archives
 category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
-# skip_render:
+skip_render:
 #  - 'index.html' # 不处理 index.html，直接作为静态文件输出
   
 # Writing
