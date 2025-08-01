@@ -14,9 +14,6 @@ url: 'https://bookmark-navigation.pages.dev'
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
-
-skip_render:
-  - 'index.html'  # 不处理 index.html，直接作为静态文件输出
  
 # Directory
 source_dir: source
@@ -27,7 +24,8 @@ category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
 skip_render:
-
+  - 'index.html' # 不处理 index.html，直接作为静态文件输出
+  
 # Writing
 new_post_name: :title.md # File name of new posts
 default_layout: post
