@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "bookmarks"
-database_id = "" # 部署时在Cloudflare控制台获取并填写
+database_id = "1c9a68f9-c1e1-40f2-ae15-96e008e86826" # 部署时在Cloudflare控制台获取并填写
 
 [vars]
 # 这些变量将在Cloudflare Workers控制台中设置
