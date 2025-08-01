@@ -15,6 +15,9 @@ root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 
+skip_render:
+  - 'index.html'  # 不处理 index.html，直接作为静态文件输出
+ 
 # Directory
 source_dir: source
 public_dir: public
