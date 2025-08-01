@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书签导航站</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航 -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fas fa-bookmark"></i>
+                <h1>书签导航站</h1>
+            </div>
+            <div class="header-controls">
+                <button id="theme-toggle" class="control-btn">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="backup-btn" class="control-btn">
+                    <i class="fas fa-cloud-download-alt"></i>
+                </button>
+                <div id="auth-container">
+                    <button id="login-btn" class="control-btn">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="app-main">
+            <!-- 登录模态框 -->
+            <div id="login-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h2>登录</h2>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="password">密码:</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <button type="submit" class="btn primary">登录</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 添加书签模态框 -->
+            <div id="bookmark-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h2 id="bookmark-modal-title">添加书签</h2>
+                    <form id="bookmark-form">
+                        <input type="hidden" id="bookmark-id">
+                        <div class="form-group">
+                            <label for="bookmark-url">URL:</label>
+                            <input type="url" id="bookmark-url" required placeholder="https://example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="bookmark-title">标题:</label>
+                            <input type="text" id="bookmark-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookmark-description">描述:</label>
+                            <textarea id="bookmark-description"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookmark-icon">图标URL:</label>
+                            <input type="url" id="bookmark-icon" placeholder="可选">
+                        </div>
+                        <div class="form-group">
+                            <label for="bookmark-category">分类:</label>
+                            <select id="bookmark-category" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="bookmark-private">
+                                设为私有
+                            </label>
+                        </div>
+                        <button type="submit" class="btn primary">保存</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 添加分类模态框 -->
+            <div id="category-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h2 id="category-modal-title">添加分类</h2>
+                    <form id="category-form">
+                        <input type="hidden" id="category-id">
+                        <div class="form-group">
+                            <label for="category-name">分类名称:</label>
+                            <input type="text" id="category-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category-description">描述:</label>
+                            <textarea id="category-description"></textarea>
+                        </div>
+                        <button type="submit" class="btn primary">保存</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 工具条 -->
+            <div class="toolbar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="搜索书签...">
+                </div>
+                <div class="action-buttons">
+                    <button id="add-bookmark-btn" class="btn primary">
+                        <i class="fas fa-plus"></i> 添加书签
+                    </button>
+                    <button id="add-category-btn" class="btn secondary">
+                        <i class="fas fa-folder-plus"></i> 添加分类
+                    </button>
+                </div>
+            </div>
+
+            <!-- 分类标签 -->
+            <div class="category-tags" id="category-tags">
+                <button class="tag active" data-category="all">全部</button>
+                <!-- 分类标签将通过JS动态添加 -->
+            </div>
+
+            <!-- 书签网格 -->
+            <div class="bookmarks-grid" id="bookmarks-container">
+                <!-- 书签将通过JS动态添加 -->
+                <div class="empty-state">
+                    <i class="fas fa-bookmark"></i>
+                    <p>暂无书签，请添加你的第一个书签</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="app-footer">
+            <p>&copy; 2023 书签导航站 | 基于Hexo和Cloudflare构建</p>
+        </footer>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/bookmarks.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>
