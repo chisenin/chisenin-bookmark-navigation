@@ -1,18 +1,13 @@
 name = "bookmark-api"
-type = "javascript"
-account_id = ""
-workers_dev = true
 main = "src/index.js"
-
-[vars]
-# 这些变量将在Cloudflare控制台中设置
-# ADMIN_PASSWORD_HASH = ""
-# JWT_SECRET = ""
+compatibility_date = "2023-07-01"
 
 [[d1_databases]]
-binding = "DB" # 数据库绑定名称，在代码中使用
+binding = "DB"
 database_name = "bookmarks"
-database_id = "" # 会在创建数据库后自动生成
+database_id = "" # 部署时在Cloudflare控制台获取并填写
 
-[build]
-command = "npm run build"
+[vars]
+# 这些变量将在Cloudflare Workers控制台中设置
+# ADMIN_PASSWORD - 管理员密码
+# JWT_SECRET - 用于JWT令牌的密钥（可选）
