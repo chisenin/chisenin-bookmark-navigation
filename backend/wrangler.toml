@@ -1,0 +1,18 @@
+name = "bookmark-api"
+type = "javascript"
+account_id = ""
+workers_dev = true
+main = "src/index.js"
+
+[vars]
+# 这些变量将在Cloudflare控制台中设置
+# ADMIN_PASSWORD_HASH = ""
+# JWT_SECRET = ""
+
+[[d1_databases]]
+binding = "DB" # 数据库绑定名称，在代码中使用
+database_name = "bookmarks"
+database_id = "" # 会在创建数据库后自动生成
+
+[build]
+command = "npm run build"
